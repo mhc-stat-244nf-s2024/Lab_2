@@ -1,0 +1,174 @@
+---
+title: 'Lab 2: Poisson and Logistic Regression, and their ties to RR and OR'
+subtitle: "STAT 244NF: Infectious Diseases Modeling"
+author: "YOUR NAME HERE"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+```
+
+## Infectious Disease Outbreak
+
+An infectious disease outbreak has been reported among adults over 21 years old. Epidemiological investigators identified cases of disease over the past month and tracked possible exposures, including going to a bar within the last 10 days (1 if yes, 0 if no), and going to an outdoor park with in the last 10 days (1 if yes, 0 if no). The data for this outbreak are generated below and saved as `id_outbreak`. 
+
+```{r echo=FALSE}
+set.seed(12346)
+
+N <- 425
+
+id_outbreak <- data.frame(
+  int = rep(1, N),
+  bar_last_10 = rbinom(n=N, size=1, prob=0.3),
+  park_last_10 = rbinom(n=N, size=1, prob=0.62)
+)
+
+b0 <- -4
+b1 <- 0.2
+b2 <- 3
+b3 <- 0.5
+B <- as.matrix(c(b0, b2, b3),ncol=1)
+
+prob_fcn <- function(X, b){
+  X=id_outbreak
+  b=B
+  exp(as.matrix(X)%*%b)/(1+exp(as.matrix(X)%*%b))
+}
+
+test <- prob_fcn(id_outbreak, B)
+
+id_outbreak <- id_outbreak %>%
+  mutate(
+    case = apply(test, 1, FUN = rbinom, n = 1, size=1)
+  )
+
+# head(id_outbreak)
+```
+
+**1. There are two potential exposures in this fictional outbreak. What are they?**
+
+
+## Calculating RR and OR based on observed data (no model)
+
+*For the following questions, you may disregard the time component.*
+
+
+**2. Calculate the probability that a person who went to the park in the last 10 days is infected.**
+
+```{r}
+
+```
+
+
+**3. Calculate the probability that a person who did not go to the park in the last 10 days is infected.**
+
+```{r}
+
+```
+
+
+**4. Calculate the probability that a person who went to a bar in the last 10 days is infected.**
+
+```{r}
+
+```
+
+
+**5. Calculate the probability that a person who did not go to a bar in the last 10 days is infected.**
+
+```{r}
+
+```
+
+**6. Calculate the relative risk, the chance that a person who went to a park will develop disease relative to the chance that a person who did not go to a park will develop disease.**
+
+```{r}
+
+```
+
+**7. Calculate the odds ratio for park exposure.**
+
+```{r}
+
+```
+
+**8. Calculate the odds ratio for bar exposure. **
+
+```{r}
+
+```
+
+**9. Compare the relative risk and odds ratio for bar exposure. Are they similar?**
+
+
+
+**10. Compare the relative risk and odds ratio for park exposure. Are they similar?**
+
+
+
+**11. Among these two potential exposures, which is more likely to be the source of the outbreak? Why?**
+
+
+## Binomial logistic regression
+
+### Bar exposure
+
+**12. To fit a logistic regression model in R, we use the `glm` function and to specify `family` argument in the `glm` function as `binomial`. In the next code chunk, run the code as given to assess the relationship between bar exposure and disease, ignoring park exposure. Print the summary of the model fit (use the function `summary`).**
+
+```{r}
+outbreak_bar_binom <- glm(case ~ bar_last_10, data=id_outbreak, family="binomial")
+summary(outbreak_bar_binom)
+```
+
+**13. The variable `bar_last_10` is an indicator variable, meaning it is a 1 if the individual went to bar, and a 0 otherwise. Using the coefficient estimates from your summary above, what is the log odds (logit) of disease given that a person went to the bar?**
+
+```{r}
+
+```
+
+**14. The inverse logit function is $\text{logit}^{-1}=\frac{e^{\beta_0+\beta_1x_1}}{1+e^{\beta_0+\beta_1x_1}}$. In the code below, I have written a function that you can use to calculate the inverse logit, which will give you the average probability of disease for an individual that went to the bar. Apply that function to the values you used to get your answer in 13. What is the average probability of disease for an individual that went to the bar?**
+
+```{r}
+## b0_hat: estimated intercept
+## b1_hat: estimated effect of going to the bar
+## x = 1 if went to bar, 0 otherwise
+invlogit <- function(b0_hat, b1_hat, x){
+  est_log_odds <- b0_hat+b1_hat*x
+  return(exp(est_log_odds)/(1+exp(est_log_odds)))
+}
+```
+**15. What is the average probability of a disease for an individual that did not go to the bar?**
+
+```{r}
+
+```
+
+**16. The coefficient for `bar_last_10` is related to the odds ratio. In order to calculate odds ratio, we exponentiate the estimate of the effect of that exposure. What is the estimated odds ratio associated with bar exposure for this disease? What is the associated 95% confidence interval? (use `confint` and exponentiate both the lower and upper bounds).**
+
+```{r}
+
+```
+
+**17. Ignoring bar exposure, fit a logistic regression model to quantify the relationship between disease and park exposure.**
+
+```{r}
+
+```
+
+**18. What is the average odds of disease for people that did not go to the park? If you are stuck, think about what you did in 13 as a guide for set up.**
+
+```{r}
+
+```
+
+**19. One benefit of logistic regression over simple calculations like those in 2-8 is that we can include multiple explanatory variables, and assess the impact of them together. To this end, fit a logistic regression model that includes both `bar_last_10` and `park_last_10` as explanatory variables. Print the summary of your model fit.**
+
+```{r}
+
+```
+
