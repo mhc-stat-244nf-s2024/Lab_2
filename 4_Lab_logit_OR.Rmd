@@ -1,5 +1,5 @@
 ---
-title: 'Lab 2: Poisson and Logistic Regression, and their ties to RR and OR'
+title: 'Lab 2: RR, OR, and Logistic Regression'
 subtitle: "STAT 244NF: Infectious Diseases Modeling"
 author: "YOUR NAME HERE"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
